@@ -26,7 +26,9 @@
  Repo: https://github.com/amazonenseDoCarai/MPU9250andBMP388andAi-ThinkerRA-02Code
  */
 #include <SPI.h>
-#include <Wire.h>   
+#include <Wire.h> 
+#include <OneWire.h>
+#include <DallasTemperature.h>
 //#include <Adafruit_GFX.h>
 //#include <Adafruit_PCD8544.h>
 
@@ -42,6 +44,10 @@
 // above document; the MPU9250 and MPU9150 are virtually identical but the latter has a different register map
 //
 //Magnetometer Registers
+
+OneWire oneWire(4);
+DallasTemperature sensors(&oneWire);
+
 #define AK8963_ADDRESS   0x0C
 #define WHO_AM_I_AK8963  0x00 // should return 0x48
 #define INFO             0x01
@@ -274,6 +280,7 @@ void setup()
   Wire.begin();
 //  TWBR = 12;  // 400 kbit/sec I2C speed
   Serial.begin(115200);
+  sensors.begin();
   
   // Set up the interrupt pin, its set as active high, push-pull
   pinMode(intPin, INPUT);
@@ -289,14 +296,14 @@ void setup()
 //  display.clearDisplay();
 //  display.setTextSize(2);
 //  display.setCursor(0,0);
-  Serial.println("MPU9250 and BMP388 and ");
+  Serial.println("MPU9250 and BMP388 and DS18B20");
 //  display.setTextSize(1);
 //  display.setCursor(0, 20);
-  Serial.println("9-DOF 16-bit");
+  Serial.println('Used by João "amazonenseDoCarai" Ramires');
 //  display.setCursor(0, 30); 
-  Serial.println("motion sensor");
+  Serial.println("For the CATI Project at ESCarlosAmarante");
 //  display.setCursor(20,40); 
-  Serial.println("60 ug LSB");
+  Serial.println("dont wanna remove them, just in case");
 //  display.display();
   delay(800);
 
@@ -473,7 +480,6 @@ void loop()
     tempCount = readTempData();  // Read the adc values
     temperature = ((float) tempCount) / 333.87 + 21.0; // Temperature in degrees Centigrade
    // Print temperature in degrees Centigrade      
-    Serial.print("Temperature is ");  Serial.print(temperature, 1);  Serial.println(" degrees C"); // Print T values to tenths of s degree C
     }
     
 //    display.clearDisplay();     
@@ -540,20 +546,25 @@ void loop()
     roll  = atan2(2.0f * (q[0] * q[1] + q[2] * q[3]), q[0] * q[0] - q[1] * q[1] - q[2] * q[2] + q[3] * q[3]);
     pitch *= 180.0f / PI;
     yaw   *= 180.0f / PI; 
-    yaw   += 1.34; /* Declination at Potheri, Chennail ,India  Model Used:	IGRF12	Help
-                                                               Latitude:	12.823640° N
-                                                               Longitude:	80.043518° E
+    yaw   += 0.86; /* Declination at Braga, Braga, Portugal    Model Used:	WMMHR-2025
+                                                               Latitude:	41.550729° N
+                                                               Longitude:	08.413249° E
                                                                Date	Declination
-                                                               2016-04-09	1.34° W  changing by  0.06° E per year (+ve for west )*/
+                                                               2026-01-26	0.86° W ± 0.32º changing by  0.16° E per year (+ve for west )*/
     roll  *= 180.0f / PI;
      
-
+    sensors.requestTemperatures();
+    Serial.println("/*")
     Serial.print("Yaw, Pitch, Roll: ");
     Serial.print(yaw+180, 2);
     Serial.print(", ");
     Serial.print(pitch, 2);
     Serial.print(", ");
     Serial.println(roll, 2);
+    Serial.print("DS18B20 Temperature: ");
+    Serial.print(sensors.getTempCByIndex(0))
+    Serial.println("ºC")
+    Serial.println("*/")
     
 //        yaw   = atan2(2.0f * (q[1] * q[2] + q[0] * q[3]), q[0] * q[0] + q[1] * q[1] - q[2] * q[2] - q[3] * q[3]);   
 //    pitch = -asin(2.0f * (q[1] * q[3] - q[0] * q[2]));
