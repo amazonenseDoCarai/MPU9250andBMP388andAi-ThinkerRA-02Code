@@ -280,6 +280,7 @@ void setup()
   digitalWrite(intPin, LOW);
   pinMode(myLed, OUTPUT);
   digitalWrite(myLed, HIGH);
+  pinMode(14, OUTPUT);
   
 //  display.begin(); // Ini8ialize the display
 //  display.setContrast(58); // Set the contrast
@@ -288,7 +289,7 @@ void setup()
 //  display.clearDisplay();
 //  display.setTextSize(2);
 //  display.setCursor(0,0);
-  Serial.println("MPU9250");
+  Serial.println("MPU9250 and BMP388 and ");
 //  display.setTextSize(1);
 //  display.setCursor(0, 20);
   Serial.println("9-DOF 16-bit");
@@ -391,6 +392,7 @@ void setup()
   }
   else
   {
+    digitalWrite(14, HIGH);
     Serial.print("Could not connect to MPU9250: 0x");
     Serial.println(c, HEX);
     while(1) ; // Loop forever if communication doesn't happen
@@ -399,6 +401,7 @@ void setup()
 
 void loop()
 {  
+
   // If intPin goes high, all data registers have new data
   if (readByte(MPU9250_ADDRESS, INT_STATUS) & 0x01) {  // On interrupt, check if data ready interrupt
     readAccelData(accelCount);  // Read the x/y/z adc values
