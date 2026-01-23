@@ -1,0 +1,25 @@
+\documentclass{article}
+\begin{document}
+\title{LIMIAR3}
+\section{Payload 1}
+Telemetria: depois
+
+Científico: agora
+
+Para o científico:
+\begin{itemize}
+    \item ESP32
+    \item BMP388 (p, T, alt)
+    \item MPU9250 (a, g, M)
+    \item 4xDS18B20 (T)
+    \item MAX31856 (termopar tipo K)
+\end{itemize}
+\subsection{Janela de 5s}
+\begin{itemize}
+    \item BMP: 5 medidas
+    \item termopar: 5 medidas
+    \item DS18B20: 1 medida
+    \item MPU9250: 50 medidas
+    \item Calcular médias e desvio padrão, guardar no cartão SD
+\end{itemize}
+\end{document}
