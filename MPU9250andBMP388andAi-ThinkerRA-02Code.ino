@@ -554,7 +554,7 @@ void loop()
     roll  *= 180.0f / PI;
      
     sensors.requestTemperatures();
-    Serial.println("/*")
+    Serial.println("/*");
     Serial.print("Yaw, Pitch, Roll: ");
     Serial.print(yaw+180, 2);
     Serial.print(", ");
@@ -562,9 +562,9 @@ void loop()
     Serial.print(", ");
     Serial.println(roll, 2);
     Serial.print("DS18B20 Temperature: ");
-    Serial.print(sensors.getTempCByIndex(0))
-    Serial.println("ºC")
-    Serial.println("*/")
+    Serial.print(sensors.getTempCByIndex(0));
+    Serial.println("ºC");
+    Serial.println("*/");
     
 //        yaw   = atan2(2.0f * (q[1] * q[2] + q[0] * q[3]), q[0] * q[0] + q[1] * q[1] - q[2] * q[2] - q[3] * q[3]);   
 //    pitch = -asin(2.0f * (q[1] * q[3] - q[0] * q[2]));
