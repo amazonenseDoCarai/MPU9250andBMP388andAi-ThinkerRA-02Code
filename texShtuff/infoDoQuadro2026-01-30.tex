@@ -2,10 +2,25 @@
 \begin{document}
 \title{Payload 1}
 \section{Telemetria}
+\subsection{Medição: }
 \begin{itemize}
-    \item MPU-9250 (giroscópio, magnetómetro e acelerómetro, implementação quase concluída)
+    \item MPU-9250 (giroscópio, magnetómetro e acelerómetro, localizado no centro gravítico, implementação quase concluída)
     \item BMP388 (pressão interna)
     \item DS18B20 (temperatura externa, talvez seja usado como um dos 6 do sistema científico)
     \item MS5611 (pressão até 10 mB)
+\end{itemize}
+
+\subsection{Emissão: }
+\begin{itemize}
+    \item Lilygo TTGO T-Beam Supreme V1.2
+\end{itemize}
+
+\section{Científico}
+\begin{itemize}
+    \item DS18B20 x 6 (um em cada lado do payload)
+    \item MPU-9250
+    \item BMP388 ou MS5611
+    \item Cartão MicroSD
+    \item ESP32
 \end{itemize}
 \end{document}
