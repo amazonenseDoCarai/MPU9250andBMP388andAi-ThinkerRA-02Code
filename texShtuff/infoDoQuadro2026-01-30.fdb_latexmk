@@ -1,6 +1,6 @@
 # Fdb version 4
-["pdflatex"] 1769866975.71759 "/home/amazo/Arduino/MPU9250andBMP388andAi-ThinkerRA-02Code/texShtuff/infoDoQuadro2026-01-30.tex" "infoDoQuadro2026-01-30.pdf" "infoDoQuadro2026-01-30" 1769866976.14968 0
-  "/home/amazo/Arduino/MPU9250andBMP388andAi-ThinkerRA-02Code/texShtuff/infoDoQuadro2026-01-30.tex" 1769866975.44454 740 f3780bbe354244a0e9bb7f6b2de5f8be ""
+["pdflatex"] 1769960558.84631 "/home/amazo/Arduino/MPU9250andBMP388andAi-ThinkerRA-02Code/texShtuff/infoDoQuadro2026-01-30.tex" "infoDoQuadro2026-01-30.pdf" "infoDoQuadro2026-01-30" 1769960559.13063 0
+  "/home/amazo/Arduino/MPU9250andBMP388andAi-ThinkerRA-02Code/texShtuff/infoDoQuadro2026-01-30.tex" 1769960558.6308 741 1677870c1b261b3c17eeef5fe1f6cdcf ""
   "/usr/share/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc" 1767555874 2900 1537cc8184ad1792082cd229ecc269f4 ""
   "/usr/share/texmf-dist/fonts/map/fontname/texfonts.map" 1767555874 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/share/texmf-dist/fonts/tfm/jknappen/ec/tcrm1000.tfm" 1767555874 1536 e07581a4bb3136ece9eeb4c3ffab8233 ""
@@ -15,8 +15,8 @@
   "/usr/share/texmf-dist/web2c/texmf.cnf" 1767555874 42087 b0f9697c952c8f5a8eede4134282cb0d ""
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1769786919 5311557 9da84c45f5b388655502706482323571 ""
   "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1769786915 2008246 9be40b439c4e29a979c0fb57feb3b6e5 ""
-  "infoDoQuadro2026-01-30.aux" 1769866976.08751 436 430392e49de66324f1172925625f33d9 "pdflatex"
-  "infoDoQuadro2026-01-30.tex" 1769866975.44454 740 f3780bbe354244a0e9bb7f6b2de5f8be ""
+  "infoDoQuadro2026-01-30.aux" 1769960559.09689 436 430392e49de66324f1172925625f33d9 "pdflatex"
+  "infoDoQuadro2026-01-30.tex" 1769960558.6308 741 1677870c1b261b3c17eeef5fe1f6cdcf ""
   (generated)
   "infoDoQuadro2026-01-30.aux"
   "infoDoQuadro2026-01-30.log"
