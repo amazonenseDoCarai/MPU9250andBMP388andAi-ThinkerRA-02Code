@@ -1,6 +1,12 @@
 /* MPU9250 Basic Example Code
  by: Kris Winer
- date: April 1, 2014 onitor. Addition of 9 DoF sensor fusion using open source Madgwick and 
+ date: April 1, 2014
+ license: Beerware - Use this code however you'd like. If you 
+ find it useful you can buy me a beer some time.
+ 
+ Demonstrate basic MPU-9250 functionality including parameterizing the register addresses, initializing the sensor, 
+ getting properly scaled accelerometer, gyroscope, and magnetometer data out. Added display functions to 
+ allow display to on breadboard monitor. Addition of 9 DoF sensor fusion using open source Madgwick and 
  Mahony filter algorithms. Sketch runs on the 3.3 V 8 MHz Pro Mini and the Teensy 3.1.
  
  SDA and SCL should have external pull-up resistors (to 3.3V).
@@ -10,8 +16,8 @@
  MPU9250 Breakout --------- Arduino
  VDD ---------------------- 3.3V
  VDDI --------------------- 3.3V
- SDA ---------------------- SDA
- SCL ---------------------- SCL
+ SDA ----------------------- A4
+ SCL ----------------------- A5
  GND ---------------------- GND
  
  Note: The MPU9250 is an I2C sensor and uses the Arduino Wire library. 
@@ -19,16 +25,12 @@
  We have disabled the internal pull-ups used by the Wire library in the Wire.h/twi.c utility file.
  We are also using the 400 kHz fast I2C mode by setting the TWI_FREQ  to 400000L /twi.h utility file.
 
- Edited by Github user shubhampaul
- Repo: https://github.com/shubhampaul/Real_Time_Planet_Tracking_System/tree/master/MPU_fux_BNO_mBias
+ shubhampaul version: https://github.com/shubhampaul/Real_Time_Planet_Tracking_System/tree/master
 
- Code used by João "amazonenseDoCarai" Ramires for the CATI project at ESCarlosAmarante
- Repo: https://github.com/amazonenseDoCarai/MPU9250andBMP388andAi-ThinkerRA-02Code
+ Used by João "amazonenseDoCarai" Ramires for the CATI project
  */
 #include <SPI.h>
-#include <Wire.h> 
-#include <OneWire.h>
-#include <DallasTemperature.h>
+#include <Wire.h>   
 //#include <Adafruit_GFX.h>
 //#include <Adafruit_PCD8544.h>
 
@@ -44,10 +46,6 @@
 // above document; the MPU9250 and MPU9150 are virtually identical but the latter has a different register map
 //
 //Magnetometer Registers
-
-OneWire oneWire(4);
-DallasTemperature sensors(&oneWire);
-
 #define AK8963_ADDRESS   0x0C
 #define WHO_AM_I_AK8963  0x00 // should return 0x48
 #define INFO             0x01
@@ -280,14 +278,12 @@ void setup()
   Wire.begin();
 //  TWBR = 12;  // 400 kbit/sec I2C speed
   Serial.begin(115200);
-  sensors.begin();
   
   // Set up the interrupt pin, its set as active high, push-pull
   pinMode(intPin, INPUT);
   digitalWrite(intPin, LOW);
   pinMode(myLed, OUTPUT);
   digitalWrite(myLed, HIGH);
-  pinMode(14, OUTPUT);
   
 //  display.begin(); // Ini8ialize the display
 //  display.setContrast(58); // Set the contrast
@@ -296,14 +292,14 @@ void setup()
 //  display.clearDisplay();
 //  display.setTextSize(2);
 //  display.setCursor(0,0);
-  Serial.println("MPU9250 and BMP388 and DS18B20");
+  Serial.println("MPU9250");
 //  display.setTextSize(1);
 //  display.setCursor(0, 20);
-  Serial.println('Used by João "amazonenseDoCarai" Ramires');
+  Serial.println("9-DOF 16-bit");
 //  display.setCursor(0, 30); 
-  Serial.println("For the CATI Project at ESCarlosAmarante");
+  Serial.println("motion sensor");
 //  display.setCursor(20,40); 
-  Serial.println("dont wanna remove them, just in case");
+  Serial.println("60 ug LSB");
 //  display.display();
   delay(800);
 
@@ -370,6 +366,7 @@ void setup()
     // Get magnetometer calibration from AK8963 ROM
     initAK8963(magCalibration); Serial.println("AK8963 initialized for active data mode...."); // Initialize device for active mode read of magnetometer
     getMres();
+    magcalMPU9250(magBias,magScale); 
 
   
   if(SerialDebug) {
@@ -399,7 +396,6 @@ void setup()
   }
   else
   {
-    digitalWrite(14, HIGH);
     Serial.print("Could not connect to MPU9250: 0x");
     Serial.println(c, HEX);
     while(1) ; // Loop forever if communication doesn't happen
@@ -408,7 +404,6 @@ void setup()
 
 void loop()
 {  
-
   // If intPin goes high, all data registers have new data
   if (readByte(MPU9250_ADDRESS, INT_STATUS) & 0x01) {  // On interrupt, check if data ready interrupt
     readAccelData(accelCount);  // Read the x/y/z adc values
@@ -454,6 +449,7 @@ void loop()
   // in the LSM9DS0 sensor. This rotation can be modified to allow any convenient orientation convention.
   // This is ok by aircraft orientation standards!  
   // Pass gyro rate as rad/s
+  MadgwickQuaternionUpdate(ax, ay, az, gx*PI/180.0f, gy*PI/180.0f, gz*PI/180.0f,  my,  mx, mz);
 //  MahonyQuaternionUpdate(ax, ay, az, gx*PI/180.0f, gy*PI/180.0f, gz*PI/180.0f, my, mx, mz);
 
 
@@ -480,6 +476,7 @@ void loop()
     tempCount = readTempData();  // Read the adc values
     temperature = ((float) tempCount) / 333.87 + 21.0; // Temperature in degrees Centigrade
    // Print temperature in degrees Centigrade      
+    Serial.print("Temperature is ");  Serial.print(temperature, 1);  Serial.println(" degrees C"); // Print T values to tenths of s degree C
     }
     
 //    display.clearDisplay();     
@@ -546,25 +543,20 @@ void loop()
     roll  = atan2(2.0f * (q[0] * q[1] + q[2] * q[3]), q[0] * q[0] - q[1] * q[1] - q[2] * q[2] + q[3] * q[3]);
     pitch *= 180.0f / PI;
     yaw   *= 180.0f / PI; 
-    yaw   += 0.86; /* Declination at Braga, Braga, Portugal    Model Used:	WMMHR-2025
-                                                               Latitude:	41.550729° N
-                                                               Longitude:	08.413249° E
+    yaw   += 1.34; /* Declination at Potheri, Chennail ,India  Model Used:	IGRF12	Help
+                                                               Latitude:	12.823640° N
+                                                               Longitude:	80.043518° E
                                                                Date	Declination
-                                                               2026-01-26	0.86° W ± 0.32º changing by  0.16° E per year (+ve for west )*/
+                                                               2016-04-09	1.34° W  changing by  0.06° E per year (+ve for west )*/
     roll  *= 180.0f / PI;
      
-    sensors.requestTemperatures();
-    Serial.println("/*");
+
     Serial.print("Yaw, Pitch, Roll: ");
     Serial.print(yaw+180, 2);
     Serial.print(", ");
     Serial.print(pitch, 2);
     Serial.print(", ");
     Serial.println(roll, 2);
-    Serial.print("DS18B20 Temperature: ");
-    Serial.print(sensors.getTempCByIndex(0));
-    Serial.println("ºC");
-    Serial.println("*/");
     
 //        yaw   = atan2(2.0f * (q[1] * q[2] + q[0] * q[3]), q[0] * q[0] + q[1] * q[1] - q[2] * q[2] - q[3] * q[3]);   
 //    pitch = -asin(2.0f * (q[1] * q[3] - q[0] * q[2]));
