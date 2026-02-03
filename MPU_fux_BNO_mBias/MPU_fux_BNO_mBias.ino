@@ -233,7 +233,7 @@ float aRes, gRes, mRes;      // scale resolutions per LSB for the sensors
   
 // Pin definitions
 int intPin = 12;  // These can be changed, 2 and 3 are the Arduinos ext int pins
-int myLed = 13; // Set up pin 13 led for toggling
+int myLed = 15; // Set up pin 13 led for toggling
 
 int16_t accelCount[3];  // Stores the 16-bit signed accelerometer sensor output
 int16_t gyroCount[3];   // Stores the 16-bit signed gyro sensor output
@@ -277,7 +277,7 @@ void setup()
 {
   Wire.begin();
 //  TWBR = 12;  // 400 kbit/sec I2C speed
-  Serial.begin(115200);
+  Serial.begin(9600);
   
   // Set up the interrupt pin, its set as active high, push-pull
   pinMode(intPin, INPUT);
@@ -310,7 +310,7 @@ void setup()
 
   // Read the WHO_AM_I register, this is a good test of communication
   byte c = readByte(MPU9250_ADDRESS, WHO_AM_I_MPU9250);  // Read WHO_AM_I register for MPU-9250
-  Serial.print("MPU9250 "); Serial.print("I AM "); Serial.print(c, HEX); Serial.print(" I should be "); Serial.println(0x71, HEX);
+  Serial.print("MPU9250 "); Serial.print("I AM "); Serial.print(c, HEX); Serial.print(" I should be "); Serial.println(0x74, HEX);
 ////  display.setCursor(20,0);
 //  Serial.println("MPU9250");
 ////  display.setCursor(0,10);
@@ -324,7 +324,7 @@ void setup()
 //  display.display();
   delay(800); 
 
-  if (c == 0x71) // WHO_AM_I should always be 0x68
+  if (c == 0x74) // WHO_AM_I should always be 0x68
   {  
     Serial.println("MPU9250 is online...");
     
