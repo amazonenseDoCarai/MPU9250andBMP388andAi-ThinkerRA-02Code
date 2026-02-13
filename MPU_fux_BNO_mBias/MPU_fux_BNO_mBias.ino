@@ -543,11 +543,11 @@ void loop()
     roll  = atan2(2.0f * (q[0] * q[1] + q[2] * q[3]), q[0] * q[0] - q[1] * q[1] - q[2] * q[2] + q[3] * q[3]);
     pitch *= 180.0f / PI;
     yaw   *= 180.0f / PI; 
-    yaw   += 1.34; /* Declination at Potheri, Chennail ,India  Model Used:	IGRF12	Help
-                                                               Latitude:	12.823640° N
-                                                               Longitude:	80.043518° E
+    yaw   += 0.85; /* Declination at Braga, Braga, Portugal  Model Used: ?
+                                                               Latitude:	41.550207° N
+                                                               Longitude:	8.413371° W
                                                                Date	Declination
-                                                               2016-04-09	1.34° W  changing by  0.06° E per year (+ve for west )*/
+                                                               2026-02-13	0.85° E  changing by  ?° E per year (+ve for west )*/
     roll  *= 180.0f / PI;
      
 
