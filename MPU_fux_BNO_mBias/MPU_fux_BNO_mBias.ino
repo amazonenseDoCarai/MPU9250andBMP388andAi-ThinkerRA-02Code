@@ -31,6 +31,7 @@
 #include <SPI.h>
 #include <Wire.h>
 #include <SoftWire.h>
+#include <Waveshare_BMP388.h
 
 SoftWire fakeWire(7, 8);
 //#include <Adafruit_GFX.h>
@@ -286,6 +287,23 @@ void setup()
   digitalWrite(intPin, LOW);
   pinMode(myLed, OUTPUT);
   digitalWrite(myLed, HIGH);
+
+  bool bRet;
+  PRESS_EN_SENSOR_TYPY enPressureType;
+  Serial.begin(115200);
+
+  pressSensorInit( &enPressureType );
+  if(PRESS_EN_SENSOR_TYPY_BMP388 == enPressureType )
+  
+  {{
+    Serial.println("Pressure sensor is BMP388");
+  }
+  else
+  {
+    Serial.println("Pressure sensor NULL");
+  }
+  Serial.println("/-------------------------------------------------------------/");
+  delay(1000);
   
 //  display.begin(); // Ini8ialize the display
 //  display.setContrast(58); // Set the contrast
@@ -406,6 +424,16 @@ void setup()
 
 void loop()
 {  
+  int32_t s32PressureVal = 0, s32TemperatureVal = 0, s32AltitudeVal = 0;
+  
+  pressSensorDataGet(&s32TemperatureVal, &s32PressureVal, &s32AltitudeVal);
+  
+  Serial.print("Pressure : "); Serial.print((float)s32PressureVal / 100);
+  Serial.print("   Altitude : "); Serial.print((float)s32AltitudeVal / 100);
+  Serial.print("   Temperature : "); Serial.print((float)s32TemperatureVal / 100);
+  Serial.println();  
+  delay(100);
+
   // If intPin goes high, all data registers have new data
   if (readByte(MPU9250_ADDRESS, INT_STATUS) & 0x01) {  // On interrupt, check if data ready interrupt
     readAccelData(accelCount);  // Read the x/y/z adc values
@@ -1072,41 +1100,4 @@ void MPU9250SelfTest(float * destination) // Should return percent deviation fro
         fakeWire.requestFrom(address, count);  // Read bytes from slave register address 
 	while (fakeWire.available()) {
         dest[i++] = fakeWire.read(); }         // Put read results in the Rx buffer
-}
-
-//----------- FIM DE MPU-9250 - INÍCIO DE BMP388 -----------
-
-#include <Waveshare_BMP388.h>
-
-void setup() {
-  // put your setup code here, to run once:
-  bool bRet;
-  PRESS_EN_SENSOR_TYPY enPressureType;
-  Serial.begin(115200);
-
-  pressSensorInit( &enPressureType );
-  if(PRESS_EN_SENSOR_TYPY_BMP388 == enPressureType )
-  
-  {{
-    Serial.println("Pressure sensor is BMP388");
-  }
-  else
-  {
-    Serial.println("Pressure sensor NULL");
-  }
-  Serial.println("/-------------------------------------------------------------/");
-  delay(1000);
-}
-
-void loop() {
-  // put your main code here, to run repeatedly:
-  int32_t s32PressureVal = 0, s32TemperatureVal = 0, s32AltitudeVal = 0;
-  
-  pressSensorDataGet(&s32TemperatureVal, &s32PressureVal, &s32AltitudeVal);
-  
-  Serial.print("Pressure : "); Serial.print((float)s32PressureVal / 100);
-  Serial.print("   Altitude : "); Serial.print((float)s32AltitudeVal / 100);
-  Serial.print("   Temperature : "); Serial.print((float)s32TemperatureVal / 100);
-  Serial.println();  
-  delay(100);
 }
