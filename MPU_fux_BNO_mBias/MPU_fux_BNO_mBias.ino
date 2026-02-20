@@ -14,10 +14,9 @@
  
  Hardware setup:
  MPU9250 Breakout --------- Arduino
- VDD ---------------------- 3.3V
- VDDI --------------------- 3.3V
- SDA ----------------------- A4
- SCL ----------------------- A5
+ VCC ---------------------- 3.3V
+ SDA ---------------------- SDA
+ SCL ---------------------- SCL
  GND ---------------------- GND
  
  Note: The MPU9250 is an I2C sensor and uses the Arduino Wire library. 
@@ -30,7 +29,10 @@
  Used by João "amazonenseDoCarai" Ramires for the CATI project
  */
 #include <SPI.h>
-#include <Wire.h>   
+#include <Wire.h>
+#include <SoftWire.h>
+
+SoftWire fakeWire(7, 8);
 //#include <Adafruit_GFX.h>
 //#include <Adafruit_PCD8544.h>
 
@@ -1071,3 +1073,6 @@ void MPU9250SelfTest(float * destination) // Should return percent deviation fro
 	while (Wire.available()) {
         dest[i++] = Wire.read(); }         // Put read results in the Rx buffer
 }
+
+//----------- FIM DE MPU-9250 - INÍCIO DE BMP388 -----------
+
