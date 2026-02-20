@@ -31,7 +31,7 @@
 #include <SPI.h>
 #include <Wire.h>
 #include <SoftWire.h>
-#include <Waveshare_BMP388.h
+#include <Waveshare_BMP388.h>
 
 SoftWire fakeWire(7, 8);
 //#include <Adafruit_GFX.h>
@@ -295,7 +295,7 @@ void setup()
   pressSensorInit( &enPressureType );
   if(PRESS_EN_SENSOR_TYPY_BMP388 == enPressureType )
   
-  {{
+  {
     Serial.println("Pressure sensor is BMP388");
   }
   else
@@ -344,7 +344,7 @@ void setup()
 //  display.display();
   delay(800); 
 
-  if (c == 0x74) // WHO_AM_I should always be 0x68
+  if (c == 0xFF) // WHO_AM_I should always be 0x68
   {  
     Serial.println("MPU9250 is online...");
     
