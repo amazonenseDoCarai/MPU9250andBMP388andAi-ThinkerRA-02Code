@@ -28,7 +28,7 @@ void loop() {
   
   Serial.print("Pressure : "); Serial.print((float)s32PressureVal / 100);
   Serial.print("   Altitude : "); Serial.print((float)s32AltitudeVal / 100);
-  Serial.print("   Temperature : "); Serial.print((float)s32TemperatureVal / 100);
+  Serial.print("   ZTemperature : "); Serial.print((float)s32TemperatureVal / 100);
   Serial.println();  
   delay(100);
 }
