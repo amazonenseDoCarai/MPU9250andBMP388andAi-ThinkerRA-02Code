@@ -27,6 +27,7 @@
  shubhampaul version: https://github.com/shubhampaul/Real_Time_Planet_Tracking_System/tree/master
 
  Used by João "amazonenseDoCarai" Ramires for the CATI project
+ Git repo: https://github.com/amazonenseDoCarai/MPU9250andBMP388andAi-ThinkerRA-02Code/tree/main
  Implemented:
  * MPU-9250
  * BMP388 (kinda)
