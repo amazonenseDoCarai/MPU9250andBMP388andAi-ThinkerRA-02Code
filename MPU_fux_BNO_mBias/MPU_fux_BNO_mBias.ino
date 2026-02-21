@@ -27,6 +27,10 @@
  shubhampaul version: https://github.com/shubhampaul/Real_Time_Planet_Tracking_System/tree/master
 
  Used by João "amazonenseDoCarai" Ramires for the CATI project
+ Implemented:
+ * MPU-9250
+ * BMP388 (kinda)
+ * DS18B20 (not yet)
  */
 #include <SPI.h>
 #include <Wire.h>
