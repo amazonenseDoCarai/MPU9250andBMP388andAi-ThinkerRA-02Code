@@ -284,7 +284,7 @@ float magBias[3],magScale[3];
 
 void setup()
 {
-  fakeWire.begin();
+  Wire.begin();
 //  TWBR = 12;  // 400 kbit/sec I2C speed
   Serial.begin(9600);
   
