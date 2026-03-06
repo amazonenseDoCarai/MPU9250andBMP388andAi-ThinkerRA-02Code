@@ -1,10 +1,10 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=pdflatex 2026.3.6)  6 MAR 2026 14:54
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=pdflatex 2026.3.6)  6 MAR 2026 15:20
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
  %&-line parsing enabled.
-**/home/amazo/Arduino/MPU9250andBMP388andAi-ThinkerRA-02Code/texshtuff2/infoDoQuadro2026-03-06.tex
-(/home/amazo/Arduino/MPU9250andBMP388andAi-ThinkerRA-02Code/texshtuff2/infoDoQuadro2026-03-06.tex
+**/home/amazo/Arduino/MPU9250andBMP388andAi-ThinkerRA-02Code/texShtuff/infoDoQuadro2026-03-06.tex
+(/home/amazo/Arduino/MPU9250andBMP388andAi-ThinkerRA-02Code/texShtuff/infoDoQuadro2026-03-06.tex
 LaTeX2e <2025-11-01>
 L3 programming layer <2026-01-19>
 (/usr/share/texmf-dist/tex/latex/base/article.cls
@@ -53,12 +53,12 @@ L3 programming layer <2026-01-19>
  ) 
 Here is how much of TeX's memory you used:
  426 strings out of 469515
- 8250 string characters out of 5470808
+ 8247 string characters out of 5470808
  433756 words of memory out of 5000000
  29160 multiletter control sequences out of 15000+600000
  627721 words of font info for 40 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 35i,5n,38p,233b,126s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 35i,5n,38p,232b,126s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb>
 Output written on infoDoQuadro2026-03-06.pdf (1 page, 13752 bytes).
 PDF statistics:

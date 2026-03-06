@@ -1,7 +1,7 @@
-PWD /home/amazo/Arduino/MPU9250andBMP388andAi-ThinkerRA-02Code/texshtuff2
+PWD /home/amazo/Arduino/MPU9250andBMP388andAi-ThinkerRA-02Code/texShtuff
 INPUT /usr/share/texmf-dist/web2c/texmf.cnf
 INPUT /var/lib/texmf/web2c/pdftex/pdflatex.fmt
-INPUT /home/amazo/Arduino/MPU9250andBMP388andAi-ThinkerRA-02Code/texshtuff2/infoDoQuadro2026-03-06.tex
+INPUT /home/amazo/Arduino/MPU9250andBMP388andAi-ThinkerRA-02Code/texShtuff/infoDoQuadro2026-03-06.tex
 OUTPUT infoDoQuadro2026-03-06.log
 INPUT /usr/share/texmf-dist/tex/latex/base/article.cls
 INPUT /usr/share/texmf-dist/tex/latex/base/article.cls
