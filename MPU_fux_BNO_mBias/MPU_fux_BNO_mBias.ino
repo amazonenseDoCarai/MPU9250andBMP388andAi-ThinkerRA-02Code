@@ -35,10 +35,11 @@
  */
 #include <SPI.h>
 #include <Wire.h>
+#include <AsyncDelay.h>
 #include <SoftWire.h>
 #include <Waveshare_BMP388.h>
 
-SoftWire fakeWire(7, 8);
+SoftWire fakeWire(6, 7);
 //#include <Adafruit_GFX.h>
 //#include <Adafruit_PCD8544.h>
 
