@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=pdflatex 2026.3.6)  6 MAR 2026 14:44
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=pdflatex 2026.3.21)  30 MAR 2026 09:41
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -53,14 +53,14 @@ L3 programming layer <2026-01-19>
  ) 
 Here is how much of TeX's memory you used:
  440 strings out of 469515
- 8447 string characters out of 5470808
+ 8447 string characters out of 5470807
  437756 words of memory out of 5000000
  29170 multiletter control sequences out of 15000+600000
  629266 words of font info for 45 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
  35i,5n,38p,232b,126s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texmf-dist/fonts/type1/public/cm-super/sfrm1000.pfb>
-Output written on infoDoQuadro2026-01-23.pdf (1 page, 37318 bytes).
+Output written on infoDoQuadro2026-01-23.pdf (1 page, 37330 bytes).
 PDF statistics:
  24 PDF objects out of 1000 (max. 8388607)
  14 compressed objects within 1 object stream
