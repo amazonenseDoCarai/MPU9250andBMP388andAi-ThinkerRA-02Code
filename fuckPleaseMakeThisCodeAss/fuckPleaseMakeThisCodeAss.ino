@@ -81,11 +81,11 @@ void calibrateIMU(int samples = 500) {
   accOffsetY = accYsum / (float)samples;
 
   // Z precisa considerar gravidade (~1g)
-  accOffsetZ = (accZsum / (float)samples) - 16384.0;
+  accOffsetZ = (accZsum / (float)samples);
 
   gyroOffsetX = gyroXsum / (float)samples;
   gyroOffsetY = gyroYsum / (float)samples;
-  gyroOffsetZ = gyroZsum / (float)samples;
+  gyroOffsetZ = gyroZsum / (float)samples - 16384.0;
 
   Serial.println("Calibração concluída!");
 }
@@ -124,7 +124,7 @@ uint8_t readReg(uint8_t reg) {
 }
 
 void setup() {
-  Wire.begin(17, 18);
+  Wire.begin(42, 41);
 
   Wire.beginTransmission(0x34); // AXP2101
   Wire.write(0x12);
@@ -187,15 +187,41 @@ void loop() {
   float accYc = gyroY - gyroOffsetY;
   float accZc = gyroZ - gyroOffsetZ;
 
+  float alpha = 0.1; // 0 = suave, 1 = sem filtro
+
+  static float accXf = 0, accYf = 0, accZf = 0;
+
+  accXf = alpha * accXc + (1 - alpha) * accXf;
+  accYf = alpha * accYc + (1 - alpha) * accYf;
+  accZf = alpha * accZc + (1 - alpha) * accZf;
+
+  float accX_ms2 = accXf / 16384.0 * 9.81;
+  float accY_ms2 = accYf / 16384.0 * 9.81;
+  float accZ_ms2 = accZf / 16384.0 * 9.81;
+
+  float gyroX_dps = gyroXc / 64.0;
+  float gyroY_dps = gyroYc / 64.0;
+  float gyroZ_dps = gyroZc / 64.0;
+
   Serial.println("=== IMU (SPI) ===");
 
-  Serial.print("ACC X: "); Serial.print(accXc);
-  Serial.print(" Y: "); Serial.print(accYc);
-  Serial.print(" Z: "); Serial.println(accZc);
+  Serial.print("ACC X: "); Serial.print(accX_ms2);
+  Serial.print(" m/s² ");
+  Serial.print(" Y: "); Serial.print(accY_ms2);
+  Serial.print(" m/s² ");
+  Serial.print(" Z: "); Serial.print(accZ_ms2);
+  Serial.println(" m/s² ");
+  Serial.println("m/s² - metros por segundo ao quadrado");
+  Serial.println("");
 
-  Serial.print("GYRO X: "); Serial.print(gyroXc);
-  Serial.print(" Y: "); Serial.print(gyroYc);
-  Serial.print(" Z: "); Serial.println(gyroZc);
+
+  Serial.print("GYRO X: "); Serial.print(gyroX_dps);
+  Serial.print(" dps ");
+  Serial.print(" Y: "); Serial.print(gyroY_dps);
+  Serial.print(" dps ");
+  Serial.print(" Z: "); Serial.print(gyroZ_dps);
+  Serial.println(" dps ");
+  Serial.println("dps - degrees per second (graus por segundo)");
 
   Serial.println("----------------------");
 
