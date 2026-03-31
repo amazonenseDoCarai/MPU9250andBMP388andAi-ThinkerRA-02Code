@@ -1,10 +1,13 @@
 //NOTE: this example was tested on ESP32, it will need some gps serial port adaptions for other Arduino platforms. (Not all Arduino Serial classes were created equal!!!)
 
-#define RX_PIN 13
-#define TX_PIN 27
+#define RX_PIN 9
+#define TX_PIN 8
 
+#include <SoftWire.h>
 #include <qqqlab_GPS_UBLOX.h>
 #include <qqqlab_AutoBaud.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
 
 class GPS_UBLOX : public AP_GPS_UBLOX {
 public:
@@ -36,6 +39,8 @@ void setup() {
   //optional auto-baud to speed up gps connection
   baud = autobaud(RX_PIN);
   
+  Serial.println("shes workin mate");
+
   Serial.printf("Initial GPS baud rate:%d\n", baud);
 
   //start GPS Serial
