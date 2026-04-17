@@ -81,11 +81,11 @@ void calibrateIMU(int samples = 500) {
   accOffsetY = accYsum / (float)samples;
 
   // Z precisa considerar gravidade (~1g)
-  accOffsetZ = (accZsum / (float)samples);
+  accOffsetZ = (accZsum / (float)samples) - 16384;
 
   gyroOffsetX = gyroXsum / (float)samples;
   gyroOffsetY = gyroYsum / (float)samples;
-  gyroOffsetZ = gyroZsum / (float)samples - 16384.0;
+  gyroOffsetZ = gyroZsum / (float)samples;
 
   Serial.println("Calibração concluída!");
 }
@@ -138,7 +138,7 @@ void setup() {
   Serial.println("T-Beam Supreme V3 SPI IMU + GPS");
 
   // GPS (pinos corretos)
-  GPSserial.begin(115200, SERIAL_8N1, 9, 8);
+  GPSserial.begin(9600, SERIAL_8N1, 9, 8);
 
   // SPI
   SPI.begin(IMU_SCK, IMU_MISO, IMU_MOSI, IMU_CS);
