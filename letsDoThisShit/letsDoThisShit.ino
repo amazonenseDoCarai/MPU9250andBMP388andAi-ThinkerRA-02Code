@@ -77,10 +77,10 @@ void setup() {
 
   // =====================================================
   // GPS
-  // RX=34
-  // TX=12
+  // RX=9
+  // TX=8
   // =====================================================
-  GPSserial.begin(9600, SERIAL_8N1, 34, 12);
+  GPSserial.begin(9600, SERIAL_8N1, 9, 8);
 
   Serial.println("GPS iniciado");
 
