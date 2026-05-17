@@ -20,10 +20,10 @@ HardwareSerial GPSserial(1);
 // SX1262 LoRa
 // Ajustar se necessário conforme a revisão da placa
 // =====================================================
-#define LORA_CS    18
-#define LORA_DIO1  14
-#define LORA_RST   23
-#define LORA_BUSY  33
+#define LORA_CS    10
+#define LORA_DIO1  1
+#define LORA_RST   5
+#define LORA_BUSY  4
 
 SX1262 radio = new Module(
   10,  // CS
@@ -75,6 +75,9 @@ void setup() {
 
   Serial.println("BME280 iniciado");
 
+  pinMode(7, OUTPUT);
+  digitalWrite(7, HIGH);
+
   // =====================================================
   // GPS
   // RX=9
@@ -119,6 +122,12 @@ void setup() {
 // =====================================================
 void loop() {
 
+  Serial.println(GPSserial.available());
+  while (GPSserial.available()) {
+  char c = GPSserial.read();
+  Serial.write(c);     // mostra NMEA bruto
+  gps.encode(c);
+  }
   // =====================================================
   // Ler GPS
   // =====================================================
@@ -129,11 +138,13 @@ void loop() {
 
   float latitude  = 0.0;
   float longitude = 0.0;
+  float altitude = 0.0;
 
   if (gps.location.isValid()) {
 
     latitude  = gps.location.lat();
     longitude = gps.location.lng();
+    altitude = gps.altitude.meters();
   }
 
   // =====================================================
@@ -149,6 +160,7 @@ void loop() {
   packet =
     "LAT:"  + String(latitude, 6) +
     ",LON:" + String(longitude, 6) +
+    ",ALT:" + String(altitude, 2) +
     ",TMP:" + String(temperature, 1) +
     ",HUM:" + String(humidity, 1) +
     ",PRS:" + String(pressure, 1);
@@ -165,6 +177,10 @@ void loop() {
   Serial.print("Longitude: ");
   Serial.println(longitude, 6);
 
+  Serial.print("Altitude GPS: ");
+  Serial.print(altitude, 2);
+  Serial.println(" m");
+
   Serial.print("Temperatura: ");
   Serial.print(temperature);
   Serial.println(" C");
@@ -176,6 +192,15 @@ void loop() {
   Serial.print("Pressão: ");
   Serial.print(pressure);
   Serial.println(" hPa");
+
+  Serial.print("Satelites: ");
+  Serial.println(gps.satellites.value());
+
+  Serial.print("HDOP: ");
+  Serial.println(gps.hdop.hdop());
+
+  Serial.print("Chars processados: ");
+  Serial.println(gps.charsProcessed());
 
   Serial.println();
   Serial.print("Pacote: ");
