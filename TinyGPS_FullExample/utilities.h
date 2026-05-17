@@ -750,10 +750,9 @@
 
 #define DISPLAY_MODEL               U8G2_SH1106_128X64_NONAME_F_HW_I2C
 #define DISPLAY_MODEL_SSD_LIB       SH1106Wire
-#define BOARD_VARIANT_NAME          "LoRa 2W"
+#define BOARD_VARIANT_NAME          "Lilygo T-Beam Supreme"
 
 #else
-#error "When using it for the first time, please define the board model in <utilities.h> 首次使用时，请在<utilities.h> 文件最上方定义板卡模型"
 #endif
 
 
