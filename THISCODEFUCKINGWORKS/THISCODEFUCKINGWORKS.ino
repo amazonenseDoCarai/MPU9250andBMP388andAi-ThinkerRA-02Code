@@ -1,5 +1,6 @@
 #include <Wire.h>
 #include <SPI.h>
+#include <SD.h>
 #include <RadioLib.h>
 #include <TinyGPSPlus.h>
 #include <Adafruit_Sensor.h>
