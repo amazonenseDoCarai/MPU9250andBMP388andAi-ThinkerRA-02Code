@@ -34,6 +34,11 @@ SX1262 radio = new Module(
 #define LORA_MOSI  11
 #define LORA_CS    10
 
+#define SD_SCK     36
+#define SD_MISO    37
+#define SD_MOSI    35
+#define SD_CS      47
+
 #define I2C_SDA 42
 #define I2C_SCL 41
 
@@ -92,6 +97,9 @@ void setup() {
   GPSserial.setRxBufferSize(4096);
   GPSserial.begin(GPS_BAUD, SERIAL_8N1, GPS_RX_PIN, GPS_TX_PIN);
   delay(1000);
+  // Envia o comando PMTK para colocar o L76K em Balloon Mode
+  GPSserial.println("$PMTK886,3*2B");
+  Serial.println("Comando Balloon Mode enviado ao Quectel.");
   Serial.println("GPS iniciado");
 
   Serial.print("Inicializando LoRa ... ");
