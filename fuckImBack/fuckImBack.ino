@@ -43,7 +43,7 @@ SX1262 radio = new Module(10, 1, 5, 4);
 #define IMU_CS     34
 #define SD_CS      47
 
-// Criação do segundo barramento SPI para o QMI8658
+// Criação do segundo barramento SPI para o QMI8658 e Cartão SD
 SPIClass imuSPI(HSPI);
 
 // Pinos I2C
@@ -91,7 +91,7 @@ void setup() {
     Serial.println("BME280 OK");
   }
 
-  // 3. Inicializar o SEGUNDO barramento SPI (específico do IMU)
+  // 3. Inicializar o SEGUNDO barramento SPI (IMU + SD)
   imuSPI.begin(IMU_SCLK, IMU_MISO, IMU_MOSI, IMU_CS);
 
   // Iniciar QMI8658 passando a nossa instância personalizada de SPI
@@ -117,13 +117,21 @@ void setup() {
                            MagDownSampleRatio::DSR_1);
   }
 
-  // 4. Iniciar GPS
+  // 4. Iniciar Cartão SD no mesmo barramento do IMU (imuSPI)
+  // Assinatura: SD.begin(pino_CS, barramento_SPI)
+  if (!SD.begin(SD_CS, imuSPI)) {
+    Serial.println("Falha ao iniciar Cartão SD!");
+  } else {
+    Serial.println("Cartão SD OK");
+  }
+
+  // 5. Iniciar GPS
   GPSserial.begin(GPS_BAUD, SERIAL_8N1, GPS_RX_PIN, GPS_TX_PIN);
   delay(500);
   GPSserial.println("$PMTK886,3*2B"); // Balloon Mode
   Serial.println("GPS OK (Balloon Mode)");
 
-  // 5. Iniciar LoRa no primeiro barramento SPI (Global/Padrão)
+  // 6. Iniciar LoRa no primeiro barramento SPI (Global/Padrão)
   SPI.begin(LORA_SCK, LORA_MISO, LORA_MOSI, LORA_CS);
   int state = radio.begin(868.0, 125.0, 9, 7, 0x12, 22, 8, 1.6);
   if (state == RADIOLIB_ERR_NONE) {
@@ -152,7 +160,7 @@ void loop() {
     MagnetometerData data;
     qmi.getAccelerometer(acc.x, acc.y, acc.z);
     qmi.getGyroscope(gyr.x, gyr.y, gyr.z);
-    float balls = qmc.readData(data);
+    float balls = qmc.readData(data); // Variável com nome criativo :)
 
     float magx = MagnetometerUtils::gaussToMicroTesla(data.magnetic_field.x);
     float magy = MagnetometerUtils::gaussToMicroTesla(data.magnetic_field.y);
@@ -175,22 +183,26 @@ void loop() {
              ",MZ:" + String(magz, 2);
 
     // Monitor Serial
-    Serial.println("\n--- Enviando Dados ---");
+    Serial.println("\n--- Processando Dados ---");
     Serial.println(packet);
     Serial.printf("Sats: %d | AccX: %.2f | AccY: %.2f | AccZ: %.2f | GyrX: %.2f | GyrY: %.2f | GyrZ: %.2f | MagX: %.2f | MagY: %.2f | MagZ: %.2f\n", gps.satellites.value(), acc.x, acc.y, acc.z, gyr.x, gyr.y, gyr.z, magx, magy, magz);
 
     // Enviar via LoRa
     int state = radio.transmit(packet);
     if (state == RADIOLIB_ERR_NONE) {
-      Serial.println("Sucesso LoRa");
+      Serial.println("-> Sucesso LoRa");
     } else {
-      Serial.printf("Erro LoRa: %d\n", state);
+      Serial.printf("-> Erro LoRa: %d\n", state);
     }
-    //Guardar num cartão SD
-    if(!SD.begin(47)){
-      Serial.println("it dont wanna");
+    
+    // Guardar no Cartão SD
+    File dataFile = SD.open("/log.txt", FILE_APPEND); // Abre em modo de adição
+    if (dataFile) {
+      dataFile.println(packet);
+      dataFile.close();
+      Serial.println("-> Gravado no SD (log.txt) com sucesso");
     } else {
-      Serial.println("it do wanna");
+      Serial.println("-> Erro: Nao foi possivel abrir/escrever no log.txt");
     }
   }
 }
