@@ -21,9 +21,6 @@ SensorQMC6310 qmc;
 
 HardwareSerial GPSserial(2);
 
-// LoRa instanciado no barramento SPI padrão
-SX1262 radio = new Module(10, 1, 5, 4);
-
 // Pinos GPS
 #define GPS_RX_PIN 9
 #define GPS_TX_PIN 8
@@ -36,15 +33,18 @@ SX1262 radio = new Module(10, 1, 5, 4);
 #define LORA_MOSI  11
 #define LORA_CS    10
 
+// CORREÇÃO DE ARQUITETURA: Criar o barramento secundário explicitamente para o LoRa
+SPIClass loraSPI(HSPI);
+
+// Entregar o loraSPI diretamente no construtor do módulo SX1262
+SX1262 radio = new Module(LORA_CS, 1, 5, 4, loraSPI);
+
 // PINOS SPI 2: Barramento nativo do IMU e SD Card na placa
 #define IMU_MOSI   35
 #define IMU_SCLK   36
 #define IMU_MISO   37
 #define IMU_CS     34
 #define SD_CS      47
-
-// Criação do segundo barramento SPI para o QMI8658 e Cartão SD
-SPIClass imuSPI(HSPI);
 
 // Pinos I2C
 #define I2C_SDA_SENSORS 17
@@ -64,11 +64,12 @@ void setup() {
   Serial.println("T-Beam Supreme: Dual SPI Bus Ativo");
   Serial.println("====================================");
 
-  // 1. Configurar pinos CS imediatamente como OUTPUT e HIGH (Isolamento total)
+  // 1. Configurar pinos CS e MISO (Isolamento total)
   pinMode(SD_CS, OUTPUT);
   digitalWrite(SD_CS, HIGH);  
   pinMode(IMU_CS, OUTPUT);
   digitalWrite(IMU_CS, HIGH); 
+  pinMode(IMU_MISO, INPUT_PULLUP); 
 
   // Inicialização dos barramentos I2C
   Wire.begin(I2C_SDA_SENSORS, I2C_SCL_SENSORS); 
@@ -80,17 +81,18 @@ void setup() {
     while(1);
   }
   
-  // Ligar todos os rails de energia
-  PMU.setALDO1Voltage(3300); PMU.enableALDO1(); // VDD Sensores
-  PMU.setALDO2Voltage(3300); PMU.enableALDO2(); // VDD SD
-  PMU.setALDO3Voltage(3300); PMU.enableALDO3(); // VDD LoRa
-  PMU.setALDO4Voltage(3300); PMU.enableALDO4(); // VDD GPS
+  // Ativar todos os canais de voltagem do AXP2101
+  PMU.setALDO1Voltage(3300); PMU.enableALDO1(); 
+  PMU.setALDO2Voltage(3300); PMU.enableALDO2(); // <-- AQUI É A ENERGIA DO SD CARD
+  PMU.setALDO3Voltage(3300); PMU.enableALDO3(); 
+  PMU.setALDO4Voltage(3300); PMU.enableALDO4(); 
   PMU.setBLDO1Voltage(3300); PMU.enableBLDO1(); 
+  PMU.setBLDO2Voltage(3300); PMU.enableBLDO2(); 
   PMU.setDLDO1Voltage(3300); PMU.enableDLDO1();
+  PMU.setDLDO2Voltage(3300); PMU.enableDLDO2();
 
-  // --- CRUCIAL: Delay para a energia do Cartão SD estabilizar a 3.3V ---
-  Serial.println("A aguardar estabilizacao de energia (1 Segundo)...");
-  delay(1000); 
+  Serial.println("A aguardar estabilizacao eletrica...");
+  delay(1200); 
 
   pinMode(GPS_EN_PIN, OUTPUT);
   digitalWrite(GPS_EN_PIN, HIGH);
@@ -102,19 +104,20 @@ void setup() {
     Serial.println("BME280 OK");
   }
 
-  // 4. Inicializar o SEGUNDO barramento SPI (Sem trancar pino de CS por hardware)
-  imuSPI.begin(IMU_SCLK, IMU_MISO, IMU_MOSI, -1);
+  // 4. USAR O OBJETO SPI NATIVO DO ESP32 PARA O SD/IMU
+  // Isto contorna os erros da biblioteca SD.h
+  SPI.begin(IMU_SCLK, IMU_MISO, IMU_MOSI, -1);
 
-  // 5. INICIAR O CARTÃO SD PRIMEIRO (Antes do IMU mexer no barramento)
+  // 5. INICIAR O CARTÃO SD PRIMEIRO
   Serial.println("A tentar iniciar o Cartao SD...");
-  if (!SD.begin(SD_CS, imuSPI, 4000000)) { 
+  if (!SD.begin(SD_CS, SPI, 1000000)) { 
     Serial.println("Falha ao iniciar Cartao SD!");
   } else {
     Serial.println("Cartao SD OK");
   }
 
-  // 6. Iniciar QMI8658 (IMU) DEPOIS do SD estar garantido
-  if (!qmi.begin(imuSPI, IMU_CS)) {
+  // 6. Iniciar QMI8658 partilhando o mesmo objeto SPI global
+  if (!qmi.begin(SPI, IMU_CS)) {
     Serial.println("Falha ao iniciar QMI8658 via SPI Proprio");
   } else {
     Serial.println("QMI8658 (SPI Dedicado) OK");
@@ -139,11 +142,11 @@ void setup() {
   // 7. Iniciar GPS
   GPSserial.begin(GPS_BAUD, SERIAL_8N1, GPS_RX_PIN, GPS_TX_PIN);
   delay(500);
-  GPSserial.println("$PMTK886,3*2B"); // Balloon Mode
+  GPSserial.println("$PMTK886,3*2B"); 
   Serial.println("GPS OK (Balloon Mode)");
 
-  // 8. Iniciar LoRa no primeiro barramento SPI
-  SPI.begin(LORA_SCK, LORA_MISO, LORA_MOSI, LORA_CS);
+  // 8. Iniciar LoRa usando o barramento loraSPI (HSPI)
+  loraSPI.begin(LORA_SCK, LORA_MISO, LORA_MOSI, LORA_CS);
   int state = radio.begin(868.0, 125.0, 9, 7, 0x12, 22, 8, 1.6);
   if (state == RADIOLIB_ERR_NONE) {
     Serial.println("LoRa OK");
