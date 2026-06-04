@@ -64,48 +64,58 @@ void setup() {
   Serial.println("T-Beam Supreme: Dual SPI Bus Ativo");
   Serial.println("====================================");
 
-  // -----------------------------------------------------------------
-  // CORREÇÃO DE CONFLITO SPI: Forçar CS em HIGH antes de iniciar o SPI
-  // -----------------------------------------------------------------
+  // 1. Configurar pinos CS imediatamente como OUTPUT e HIGH (Isolamento total)
   pinMode(SD_CS, OUTPUT);
-  digitalWrite(SD_CS, HIGH);  // Mantém o Cartão SD calado enquanto o IMU inicia
+  digitalWrite(SD_CS, HIGH);  
   pinMode(IMU_CS, OUTPUT);
-  digitalWrite(IMU_CS, HIGH); // Mantém o IMU calado enquanto o SD inicia
-  // -----------------------------------------------------------------
+  digitalWrite(IMU_CS, HIGH); 
 
   // Inicialização dos barramentos I2C
-  Wire.begin(I2C_SDA_SENSORS, I2C_SCL_SENSORS); // Sensores (BME280, QMC6310)
-  Wire1.begin(I2C_SDA_PMU, I2C_SCL_PMU);        // PMU
+  Wire.begin(I2C_SDA_SENSORS, I2C_SCL_SENSORS); 
+  Wire1.begin(I2C_SDA_PMU, I2C_SCL_PMU);        
 
-  // 1. Iniciar PMU (Energia)
+  // 2. Iniciar PMU (Energia)
   if (!PMU.begin(Wire1, AXP2101_SLAVE_ADDRESS, I2C_SDA_PMU, I2C_SCL_PMU)) {
     Serial.println("Falha ao iniciar PMU!");
     while(1);
   }
   
-  // Ligar rails de energia (fundamental para alimentar os barramentos internos)
+  // Ligar todos os rails de energia
   PMU.setALDO1Voltage(3300); PMU.enableALDO1(); // VDD Sensores
-  PMU.setALDO2Voltage(3300); PMU.enableALDO2();
-  PMU.setALDO3Voltage(3300); PMU.enableALDO3();
-  PMU.setALDO4Voltage(3300); PMU.enableALDO4(); // GPS
+  PMU.setALDO2Voltage(3300); PMU.enableALDO2(); // VDD SD
+  PMU.setALDO3Voltage(3300); PMU.enableALDO3(); // VDD LoRa
+  PMU.setALDO4Voltage(3300); PMU.enableALDO4(); // VDD GPS
+  PMU.setBLDO1Voltage(3300); PMU.enableBLDO1(); 
+  PMU.setDLDO1Voltage(3300); PMU.enableDLDO1();
+
+  // --- CRUCIAL: Delay para a energia do Cartão SD estabilizar a 3.3V ---
+  Serial.println("A aguardar estabilizacao de energia (1 Segundo)...");
+  delay(1000); 
 
   pinMode(GPS_EN_PIN, OUTPUT);
   digitalWrite(GPS_EN_PIN, HIGH);
-  delay(500);
 
-  // 2. Iniciar BME280 (I2C)
+  // 3. Iniciar BME280 (I2C)
   if (!bme.begin(0x76) && !bme.begin(0x77)) {
     Serial.println("Falha ao iniciar BME280");
   } else {
     Serial.println("BME280 OK");
   }
 
-  // 3. Inicializar o SEGUNDO barramento SPI (específico do IMU + SD)
-  imuSPI.begin(IMU_SCLK, IMU_MISO, IMU_MOSI, IMU_CS);
+  // 4. Inicializar o SEGUNDO barramento SPI (Sem trancar pino de CS por hardware)
+  imuSPI.begin(IMU_SCLK, IMU_MISO, IMU_MOSI, -1);
 
-  // Iniciar QMI8658 passando a nossa instância personalizada de SPI
+  // 5. INICIAR O CARTÃO SD PRIMEIRO (Antes do IMU mexer no barramento)
+  Serial.println("A tentar iniciar o Cartao SD...");
+  if (!SD.begin(SD_CS, imuSPI, 4000000)) { 
+    Serial.println("Falha ao iniciar Cartao SD!");
+  } else {
+    Serial.println("Cartao SD OK");
+  }
+
+  // 6. Iniciar QMI8658 (IMU) DEPOIS do SD estar garantido
   if (!qmi.begin(imuSPI, IMU_CS)) {
-    Serial.println("Falha ao iniciar QMI8658 via SPI Próprio");
+    Serial.println("Falha ao iniciar QMI8658 via SPI Proprio");
   } else {
     Serial.println("QMI8658 (SPI Dedicado) OK");
     qmi.configAccelerometer(SensorQMI8658::ACC_RANGE_4G, SensorQMI8658::ACC_ODR_1000Hz, SensorQMI8658::LPF_MODE_0);
@@ -114,7 +124,7 @@ void setup() {
     qmi.enableGyroscope();
   }
 
-  // Iniciar QMC6310 (Magnetómetro continua no I2C)
+  // Iniciar QMC6310 (Magnetómetro - I2C)
   if (!qmc.begin(Wire, QMC6310U_SLAVE_ADDRESS, I2C_SDA_SENSORS, I2C_SCL_SENSORS)) {
     Serial.println("Falha ao iniciar QMC6310");
   } else {
@@ -126,20 +136,13 @@ void setup() {
                            MagDownSampleRatio::DSR_1);
   }
 
-  // 4. Iniciar Cartão SD partilhando o imuSPI a 4MHz
-  if (!SD.begin(SD_CS, imuSPI, 4000000)) {
-    Serial.println("Falha ao iniciar Cartão SD!");
-  } else {
-    Serial.println("Cartão SD OK");
-  }
-
-  // 5. Iniciar GPS
+  // 7. Iniciar GPS
   GPSserial.begin(GPS_BAUD, SERIAL_8N1, GPS_RX_PIN, GPS_TX_PIN);
   delay(500);
   GPSserial.println("$PMTK886,3*2B"); // Balloon Mode
   Serial.println("GPS OK (Balloon Mode)");
 
-  // 6. Iniciar LoRa no primeiro barramento SPI (Global/Padrão)
+  // 8. Iniciar LoRa no primeiro barramento SPI
   SPI.begin(LORA_SCK, LORA_MISO, LORA_MOSI, LORA_CS);
   int state = radio.begin(868.0, 125.0, 9, 7, 0x12, 22, 8, 1.6);
   if (state == RADIOLIB_ERR_NONE) {
@@ -162,13 +165,13 @@ void loop() {
     float temp = bme.readTemperature();
     float pres = bme.readPressure() / 100.0F;
 
-    // Leitura QMI8658 e QMC6310
+    // Leitura IMU/Mag
     IMUdata acc;
     IMUdata gyr;
     MagnetometerData data;
     qmi.getAccelerometer(acc.x, acc.y, acc.z);
     qmi.getGyroscope(gyr.x, gyr.y, gyr.z);
-    float balls = qmc.readData(data);
+    qmc.readData(data);
 
     float magx = MagnetometerUtils::gaussToMicroTesla(data.magnetic_field.x);
     float magy = MagnetometerUtils::gaussToMicroTesla(data.magnetic_field.y);
@@ -193,7 +196,6 @@ void loop() {
     // Monitor Serial
     Serial.println("\n--- Processando Dados ---");
     Serial.println(packet);
-    Serial.printf("Sats: %d | AccX: %.2f | AccY: %.2f | AccZ: %.2f | GyrX: %.2f | GyrY: %.2f | GyrZ: %.2f | MagX: %.2f | MagY: %.2f | MagZ: %.2f\n", gps.satellites.value(), acc.x, acc.y, acc.z, gyr.x, gyr.y, gyr.z, magx, magy, magz);
 
     // Enviar via LoRa
     int state = radio.transmit(packet);
@@ -203,7 +205,7 @@ void loop() {
       Serial.printf("-> Erro LoRa: %d\n", state);
     }
     
-    // Guardar no Cartão SD (Apenas tenta se o SD tiver iniciado com sucesso no setup)
+    // Guardar no Cartão SD
     File dataFile = SD.open("/log.txt", FILE_APPEND);
     if (dataFile) {
       dataFile.println(packet);
