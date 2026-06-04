@@ -8,6 +8,7 @@
 
 // Biblioteca para o QMI8658
 #include <SensorQMI8658.hpp>
+#include <SensorQMC6310.hpp>
 
 #define XPOWERS_CHIP_AXP2101
 #include <XPowersLib.h>
@@ -16,6 +17,7 @@ XPowersPMU PMU;
 Adafruit_BME280 bme;
 TinyGPSPlus gps;
 SensorQMI8658 qmi; // Instância do IMU
+SensorQMC6310 qmc;
 
 HardwareSerial GPSserial(2);
 
@@ -77,13 +79,19 @@ void setup() {
   }
 
   // 3. Iniciar QMI8658 (IMU)
-  if (!qmi.begin(Wire, QMI8658_L_ADDR, I2C_SDA_SENSORS, I2C_SCL_SENSORS)) {
+  if (!qmi.begin(Wire, QMI8658_L_SLAVE_ADDRESS, I2C_SDA_SENSORS, I2C_SCL_SENSORS)) {
     Serial.println("Falha ao iniciar QMI8658");
   } else {
     Serial.println("QMI8658 OK");
     // Configurações básicas: 4G de sensibilidade e 512 dps para o giro
     qmi.configAccelerometer(SensorQMI8658::ACC_RANGE_4G, SensorQMI8658::ACC_ODR_1000Hz, SensorQMI8658::LPF_MODE_0);
-    qmi.configGyroscope(SensorQMI8658::GYRO_RANGE_512DPS, SensorQMI8658::GYRO_ODR_1000Hz, SensorQMI8658::LPF_MODE_0);
+    qmi.configGyroscope(SensorQMI8658::GYR_RANGE_512DPS, SensorQMI8658::GYR_ODR_896_8Hz, SensorQMI8658::LPF_MODE_0);
+  }
+  if (!qmc.begin(Wire, QMC6310U_SLAVE_ADDRESS, I2C_SDA_SENSORS, I2C_SCL_SENSORS)) {
+    Serial.println("Falha ao iniciar QMC6310");
+  } else {
+    Serial.println("QMC6310 OK");
+    qmc.configMagnetometer();
   }
 
   // 4. Iniciar GPS
@@ -116,8 +124,8 @@ void loop() {
     float pres = bme.readPressure() / 100.0F;
 
     // Leitura QMI8658 (Acelerómetro e Giroscópio)
-    IMUData acc;
-    IMUData gyr;
+    IMUdata acc;
+    IMUdata gyr;
     qmi.getAccelerometer(acc.x, acc.y, acc.z);
     qmi.getGyroscope(gyr.x, gyr.y, gyr.z);
 
@@ -129,12 +137,15 @@ void loop() {
              ",PRES:" + String(pres, 1) +
              ",AX:" + String(acc.x, 2) +
              ",AY:" + String(acc.y, 2) +
-             ",AZ:" + String(acc.z, 2);
+             ",AZ:" + String(acc.z, 2) +
+             ",GX:" + String(gyr.x, 2) +
+             ",GY:" + String(gyr.y, 2) +
+             ",GZ:" + String(gyr.z, 2);
 
     // Monitor Serial
     Serial.println("\n--- Enviando Dados ---");
     Serial.println(packet);
-    Serial.printf("Sats: %d | AccX: %.2f | AccY: %.2f | AccZ: %.2f\n", gps.satellites.value(), acc.x, acc.y, acc.z);
+    Serial.printf("Sats: %d | AccX: %.2f | AccY: %.2f | AccZ: %.2f | GyrX: %.2f | GyrY: %.2f | GyrZ: %.2f\n", gps.satellites.value(), acc.x, acc.y, acc.z, gyr.x, gyr.y, gyr.z);
 
     // Enviar via LoRa
     int state = radio.transmit(packet);
@@ -143,5 +154,6 @@ void loop() {
     } else {
       Serial.printf("Erro LoRa: %d\n", state);
     }
+    
   }
 }
