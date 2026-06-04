@@ -125,8 +125,8 @@ void loop() {
     packet = "LAT:" + String(gps.location.lat(), 6) +
              ",LON:" + String(gps.location.lng(), 6) +
              ",ALT:" + String(gps.altitude.meters(), 1) +
-             ",T:" + String(temp, 1) +
-             ",P:" + String(pres, 1) +
+             ",TEMP:" + String(temp, 1) +
+             ",PRES:" + String(pres, 1) +
              ",AX:" + String(acc.x, 2) +
              ",AY:" + String(acc.y, 2) +
              ",AZ:" + String(acc.z, 2);
