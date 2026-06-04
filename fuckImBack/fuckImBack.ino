@@ -64,6 +64,15 @@ void setup() {
   Serial.println("T-Beam Supreme: Dual SPI Bus Ativo");
   Serial.println("====================================");
 
+  // -----------------------------------------------------------------
+  // CORREÇÃO DE CONFLITO SPI: Forçar CS em HIGH antes de iniciar o SPI
+  // -----------------------------------------------------------------
+  pinMode(SD_CS, OUTPUT);
+  digitalWrite(SD_CS, HIGH);  // Mantém o Cartão SD calado enquanto o IMU inicia
+  pinMode(IMU_CS, OUTPUT);
+  digitalWrite(IMU_CS, HIGH); // Mantém o IMU calado enquanto o SD inicia
+  // -----------------------------------------------------------------
+
   // Inicialização dos barramentos I2C
   Wire.begin(I2C_SDA_SENSORS, I2C_SCL_SENSORS); // Sensores (BME280, QMC6310)
   Wire1.begin(I2C_SDA_PMU, I2C_SCL_PMU);        // PMU
@@ -91,7 +100,7 @@ void setup() {
     Serial.println("BME280 OK");
   }
 
-  // 3. Inicializar o SEGUNDO barramento SPI (IMU + SD)
+  // 3. Inicializar o SEGUNDO barramento SPI (específico do IMU + SD)
   imuSPI.begin(IMU_SCLK, IMU_MISO, IMU_MOSI, IMU_CS);
 
   // Iniciar QMI8658 passando a nossa instância personalizada de SPI
@@ -117,9 +126,8 @@ void setup() {
                            MagDownSampleRatio::DSR_1);
   }
 
-  // 4. Iniciar Cartão SD no mesmo barramento do IMU (imuSPI)
-  // Assinatura: SD.begin(pino_CS, barramento_SPI)
-  if (!SD.begin(SD_CS, imuSPI)) {
+  // 4. Iniciar Cartão SD partilhando o imuSPI a 4MHz
+  if (!SD.begin(SD_CS, imuSPI, 4000000)) {
     Serial.println("Falha ao iniciar Cartão SD!");
   } else {
     Serial.println("Cartão SD OK");
@@ -154,13 +162,13 @@ void loop() {
     float temp = bme.readTemperature();
     float pres = bme.readPressure() / 100.0F;
 
-    // Leitura QMI8658 (A biblioteca gerencia a comunicação via imuSPI de forma transparente)
+    // Leitura QMI8658 e QMC6310
     IMUdata acc;
     IMUdata gyr;
     MagnetometerData data;
     qmi.getAccelerometer(acc.x, acc.y, acc.z);
     qmi.getGyroscope(gyr.x, gyr.y, gyr.z);
-    float balls = qmc.readData(data); // Variável com nome criativo :)
+    float balls = qmc.readData(data);
 
     float magx = MagnetometerUtils::gaussToMicroTesla(data.magnetic_field.x);
     float magy = MagnetometerUtils::gaussToMicroTesla(data.magnetic_field.y);
@@ -195,8 +203,8 @@ void loop() {
       Serial.printf("-> Erro LoRa: %d\n", state);
     }
     
-    // Guardar no Cartão SD
-    File dataFile = SD.open("/log.txt", FILE_APPEND); // Abre em modo de adição
+    // Guardar no Cartão SD (Apenas tenta se o SD tiver iniciado com sucesso no setup)
+    File dataFile = SD.open("/log.txt", FILE_APPEND);
     if (dataFile) {
       dataFile.println(packet);
       dataFile.close();
