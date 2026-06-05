@@ -54,7 +54,7 @@ SX1262 radio = new Module(LORA_CS, 1, 5, 4, loraSPI);
 
 String packet;
 unsigned long ultimaTransmissao = 0;
-const unsigned long intervaloTransmissao = 5000;
+const unsigned long intervaloTransmissao = 240000;
 
 void setup() {
   Serial.begin(115200);
